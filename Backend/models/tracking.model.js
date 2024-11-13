@@ -17,6 +17,12 @@ const trackSchema = new Schema(
         required: true,
       },
     ],
+    locationStatus: [
+      {
+        type: Array,
+        required: true,
+      },
+    ],
     startTime: {
       type: String,
       required: true,

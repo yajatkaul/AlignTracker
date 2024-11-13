@@ -23,7 +23,7 @@ class _HomeState extends State<Home> {
     final sessionCookie = prefs.getString('session_cookie');
 
     final response = await http.get(
-      Uri.parse('$serverURL/api/tracking/getSites'),
+      Uri.parse('$serverURL/api/tracking/getSites?completed=false'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Cookie': sessionCookie!,

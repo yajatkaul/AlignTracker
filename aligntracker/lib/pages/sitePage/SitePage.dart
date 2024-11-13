@@ -48,25 +48,41 @@ Future<void> _trackLocation(String siteID) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final sessionCookie = prefs.getString('session_cookie');
 
-  final firstPos = await Geolocator.getCurrentPosition();
-  print(firstPos.latitude);
-  http.post(
-    Uri.parse('$serverURL/api/tracking/trackSite'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Cookie': sessionCookie!,
-    },
-    body: jsonEncode(<String, String>{
-      'siteID': siteID,
-      'latitude': '${firstPos.latitude}',
-      'longitude': '${firstPos.longitude}',
-    }),
-  );
-
   LocationSettings locationSettings = const LocationSettings(
     accuracy: LocationAccuracy.high,
     distanceFilter: 100,
   );
+
+  // Listen for changes in location services status
+  Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+    if (status == ServiceStatus.enabled) {
+      print(status);
+      http.post(
+        Uri.parse('$serverURL/api/tracking/locationStatusChecker'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cookie': sessionCookie!,
+        },
+        body: jsonEncode(<String, String>{
+          'siteID': siteID,
+          'status': "Working",
+        }),
+      );
+    } else {
+      print(status);
+      http.post(
+        Uri.parse('$serverURL/api/tracking/locationStatusChecker'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cookie': sessionCookie!,
+        },
+        body: jsonEncode(<String, String>{
+          'siteID': siteID,
+          'status': "Stopped",
+        }),
+      );
+    }
+  });
 
   Geolocator.getPositionStream(locationSettings: locationSettings)
       .listen((Position position) {
@@ -75,7 +91,7 @@ Future<void> _trackLocation(String siteID) async {
       Uri.parse('$serverURL/api/tracking/trackSite'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'Cookie': sessionCookie,
+        'Cookie': sessionCookie!,
       },
       body: jsonEncode(<String, String>{
         'siteID': siteID,

@@ -4,6 +4,7 @@ import {
   completeSite,
   createSite,
   getSites,
+  locationStatusChecker,
   trackSite,
 } from "../controller/tracking.controller.js";
 import upload from "../utils/multer.js";
@@ -17,6 +18,7 @@ router.post("/trackSite", trackSite);
 router.get("/getSites", getSites);
 router.get("/checkSiteStatus", checkSiteStatus);
 
+router.post("/locationStatusChecker", locationStatusChecker);
 router.post("/completeSite", (req, res, next) => {
   upload.fields([
     { name: "image", maxCount: 10 },

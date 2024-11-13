@@ -26,9 +26,11 @@ export const createSite = async (req, res) => {
 
 export const getSites = async (req, res) => {
   try {
+    const { completed } = req.query;
+
     const sites = await Site.find({
       employeeId: req.session.userId,
-      finished: false,
+      finished: completed,
     });
 
     res.status(200).json(sites);
@@ -56,6 +58,7 @@ export const trackSite = async (req, res) => {
         finished: false,
         started: true,
         siteImages: [],
+        pauses: [],
       });
 
       newTrackSite.locations.push([latitude, longitude, formattedTime]);
@@ -73,6 +76,24 @@ export const trackSite = async (req, res) => {
     }
 
     trackSite.locations.push([latitude, longitude, formattedTime]);
+    await trackSite.save();
+
+    return res.status(200);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const locationStatusChecker = async (req, res) => {
+  try {
+    const { siteID, status } = req.body;
+
+    const formattedTime = moment().format("h:mm A");
+
+    const trackSite = await Tracking.findOne({ siteID });
+
+    trackSite.locationStatus.push([status, formattedTime]);
     await trackSite.save();
 
     return res.status(200);
