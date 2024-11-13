@@ -101,10 +101,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-      setState(() {
-        profilePic = '$serverURL/api${responseBody['profilePic']}';
-        _usernameController.text = responseBody['displayName'];
-      });
+      if (mounted) {
+        setState(() {
+          profilePic = '$serverURL/api${responseBody['profilePic']}';
+          _usernameController.text = responseBody['displayName'];
+        });
+      }
     } else {
       final responseBody = jsonDecode(response.body);
       showToast(responseBody['error'], false);
@@ -163,8 +165,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 image = await picker.pickImage(source: ImageSource.gallery);
                 if (image != null) {
                   setState(() {
-                    galleryPic = File(image!.path);
-                    selectedFromGallery = true;
+                    if (mounted) {
+                      galleryPic = File(image!.path);
+                      selectedFromGallery = true;
+                    }
                   });
                 }
               },

@@ -20,6 +20,8 @@ dependencies:
   flutter_background_service: ^5.0.10
   geolocator: ^13.0.1
   path_provider: ^2.0.9
+  liquid_pull_to_refresh: ^3.0.1
+  permission_handler: ^10.2.0
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +30,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/

@@ -1,4 +1,7 @@
 import 'package:aligntracker/env.dart';
+import 'package:delightful_toast/delight_toast.dart';
+import 'package:delightful_toast/toast/components/toast_card.dart';
+import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 
 class Completesite extends StatefulWidget {
-  final siteID;
+  final String siteID;
   const Completesite({super.key, required this.siteID});
 
   @override
@@ -80,7 +83,6 @@ class _CompletesiteState extends State<Completesite> {
       request.files.add(pic);
     }
 
-    // Send the request
     try {
       var response = await request.send();
       if (response.statusCode == 200) {
@@ -100,6 +102,38 @@ class _CompletesiteState extends State<Completesite> {
 
   @override
   Widget build(BuildContext context) {
+    void showToast(String message, bool success) {
+      DelightToastBar(
+        position: DelightSnackbarPosition.top,
+        autoDismiss: true,
+        builder: (context) => ToastCard(
+          leading: Icon(
+            success ? Icons.check_circle : Icons.flutter_dash,
+            size: 28,
+          ),
+          title: Text(
+            message,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ).show(context);
+    }
+
+    Future<void> uploadProcess() async {
+      if (yourImage == null || siteImages == []) {
+        showToast("Submit all the images", false);
+        return;
+      }
+
+      uploadImages();
+      if (mounted) {
+        Navigator.pop(context, 1);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Site Completion"),
@@ -143,11 +177,7 @@ class _CompletesiteState extends State<Completesite> {
             const Spacer(),
             SlideAction(
               text: "Stop",
-              onSubmit: () async {
-                // Upload images when the user submits
-                await uploadImages();
-                Navigator.pop(context, 1);
-              },
+              onSubmit: uploadProcess,
             ),
           ],
         ),

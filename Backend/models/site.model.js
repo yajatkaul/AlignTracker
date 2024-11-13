@@ -22,6 +22,11 @@ const siteSchema = new Schema(
       type: String,
       required: true,
     },
+    finished: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
   { timestamps: true }
 );

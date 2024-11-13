@@ -36,3 +36,24 @@ export const updatePFP = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const getLeaderBoard = async (req, res) => {
+  try {
+    const { page = 1, limit = 15 } = req.query;
+
+    const totalUsers = await User.countDocuments();
+
+    const users = await User.find()
+      .sort({ points: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select("-password");
+
+    const hasMore = page * limit < totalUsers;
+
+    res.status(200).json({ users, hasMore });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};

@@ -4,6 +4,8 @@ import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/SitePage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,10 +31,12 @@ class _HomeState extends State<Home> {
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        sites = jsonDecode(response.body);
-      });
-    } else {}
+      if (mounted) {
+        setState(() {
+          sites = jsonDecode(response.body);
+        });
+      }
+    }
   }
 
   void checkPerms() async {
@@ -56,6 +60,14 @@ class _HomeState extends State<Home> {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+
+    final status = await Permission.scheduleExactAlarm.request();
+    if (status.isGranted) {
+      // You can now set the exact alarm
+    } else {
+      // Handle the case where permission is denied
+      print("Permission denied");
+    }
   }
 
   @override
@@ -65,28 +77,35 @@ class _HomeState extends State<Home> {
     checkPerms();
   }
 
+  Future<void> _handleRefresh() async {
+    await _getSites();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: sites.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView(
-              children: sites.map((site) {
-                return Card(
-                  child: ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SitePage(site: site),
-                        ),
-                      );
-                    },
-                    title: Text(site['siteName'] ?? 'No Title'),
-                  ),
-                );
-              }).toList(),
-            ),
+      body: LiquidPullToRefresh(
+        onRefresh: _handleRefresh,
+        child: sites.isEmpty
+            ? ListView()
+            : ListView(
+                children: sites.map((site) {
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SitePage(site: site),
+                          ),
+                        );
+                      },
+                      title: Text(site['siteName'] ?? 'No Title'),
+                    ),
+                  );
+                }).toList(),
+              ),
+      ),
     );
   }
 }

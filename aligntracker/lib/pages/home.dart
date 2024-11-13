@@ -52,9 +52,11 @@ class _HomePageState extends State<HomePage> {
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-      setState(() {
-        profilePic = '$serverURL/api${responseBody['profilePic']}';
-      });
+      if (mounted) {
+        setState(() {
+          profilePic = '$serverURL/api${responseBody['profilePic']}';
+        });
+      }
     } else {
       final responseBody = jsonDecode(response.body);
       showToast(responseBody['error'], false);
@@ -123,13 +125,17 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 icon: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: Image.network(
-                    profilePic == null
-                        ? "https://i.pinimg.com/736x/f6/bc/9a/f6bc9a75409c4db0acf3683bab1fab9c.jpg"
-                        : profilePic!,
-                    fit: BoxFit.cover,
-                  ),
+                  borderRadius: BorderRadius.circular(
+                      20.0), // Adjust the radius as needed
+                  child: profilePic == null
+                      ? Image.asset(
+                          "assets/images/blankpfp.jpg",
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          profilePic!,
+                          fit: BoxFit.cover,
+                        ),
                 ))
           ],
           leading: Builder(

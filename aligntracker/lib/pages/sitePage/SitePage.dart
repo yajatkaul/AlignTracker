@@ -48,6 +48,21 @@ Future<void> _trackLocation(String siteID) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final sessionCookie = prefs.getString('session_cookie');
 
+  final firstPos = await Geolocator.getCurrentPosition();
+  print(firstPos.latitude);
+  http.post(
+    Uri.parse('$serverURL/api/tracking/trackSite'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Cookie': sessionCookie!,
+    },
+    body: jsonEncode(<String, String>{
+      'siteID': siteID,
+      'latitude': '${firstPos.latitude}',
+      'longitude': '${firstPos.longitude}',
+    }),
+  );
+
   LocationSettings locationSettings = const LocationSettings(
     accuracy: LocationAccuracy.high,
     distanceFilter: 100,
@@ -55,11 +70,12 @@ Future<void> _trackLocation(String siteID) async {
 
   Geolocator.getPositionStream(locationSettings: locationSettings)
       .listen((Position position) {
+    print(position.latitude);
     http.post(
       Uri.parse('$serverURL/api/tracking/trackSite'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'Cookie': sessionCookie!,
+        'Cookie': sessionCookie,
       },
       body: jsonEncode(<String, String>{
         'siteID': siteID,
@@ -81,7 +97,7 @@ class SitePage extends StatefulWidget {
 
 class _SitePageState extends State<SitePage> {
   bool started = true;
-  bool finished = true;
+  bool finished = false;
   Future<void> initializeService() async {
     final service = FlutterBackgroundService();
 
@@ -92,10 +108,10 @@ class _SitePageState extends State<SitePage> {
         onBackground: onIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
-        autoStart: true,
+        //autoStart: true,
         onStart: onStart,
         isForegroundMode: true,
-        autoStartOnBoot: true,
+        //autoStartOnBoot: true,
       ),
     );
 
@@ -118,10 +134,12 @@ class _SitePageState extends State<SitePage> {
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        started = jsonDecode(response.body)['started'];
-        finished = jsonDecode(response.body)['finished'];
-      });
+      if (mounted) {
+        setState(() {
+          started = jsonDecode(response.body)['started'];
+          finished = jsonDecode(response.body)['finished'];
+        });
+      }
     }
   }
 
@@ -129,6 +147,14 @@ class _SitePageState extends State<SitePage> {
   void initState() {
     super.initState();
     _getSiteStatus();
+  }
+
+  Future<void> _startTracking() async {
+    await initializeService();
+    setState(() {
+      started = true;
+      finished = false;
+    });
   }
 
   @override
@@ -148,35 +174,31 @@ class _SitePageState extends State<SitePage> {
             Text("Timing: ${widget.site['timing']}"),
             Text("Created At: ${widget.site['createdAt']}"),
             Text("Updated At: ${widget.site['updatedAt']}"),
-            !started
-                ? SlideAction(
-                    text: "Start",
-                    onSubmit: () {
-                      initializeService();
-                      setState(() {
-                        started = true;
-                      });
-                    },
-                  )
-                : const SizedBox.shrink(),
-            !finished
-                ? ElevatedButton(
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Completesite(
-                            siteID: widget.site['_id'],
-                          ),
+            if (!started)
+              SlideAction(
+                text: "Start",
+                onSubmit: _startTracking,
+              ),
+            if (started == true && finished == false)
+              ElevatedButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Completesite(
+                          siteID: widget.site['_id'],
                         ),
-                      );
+                      ),
+                    );
 
-                      if (result == 1) {
-                        stopService();
-                      }
-                    },
-                    child: const Text("Finish Site"))
-                : const SizedBox.shrink(),
+                    if (result == 1) {
+                      stopService();
+                      setState(() {
+                        finished = true;
+                      });
+                    }
+                  },
+                  child: const Text("Finish Site")),
           ],
         ),
       ),

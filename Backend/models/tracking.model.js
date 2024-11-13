@@ -32,6 +32,14 @@ const trackSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    selfi: {
+      type: String,
+    },
+    siteImages: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );
