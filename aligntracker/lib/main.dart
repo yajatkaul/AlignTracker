@@ -1,5 +1,7 @@
 import 'package:aligntracker/auth/login.dart';
 import 'package:aligntracker/pages/home.dart';
+import 'package:aligntracker/theme/dark_theme.dart';
+import 'package:aligntracker/theme/light_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +22,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: lightTheme,
+      darkTheme: darkTheme,
       home: FutureBuilder<String?>(
         future: _getSessionCookie(),
         builder: (context, snapshot) {

@@ -10,7 +10,9 @@ import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,7 +26,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? profilePic;
 
-  List<Widget> pages = [Home(), Leaderboard(), Profile()];
+  List<Widget> pages = [const Home(), const Leaderboard(), const Profile()];
   int _currentPage = 0;
   int _selectedIndex = 0;
 
@@ -63,9 +65,73 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void checkPerms() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _showLocationDialog('Location Services Disabled',
+          'Please enable location services to use this feature.');
+      return;
+    }
+
+    // Check location permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _showLocationDialog('Location Permission Denied',
+            'Please allow location permission to continue.');
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      _showLocationDialog('Location Permission Permanently Denied',
+          'Location permissions are permanently denied. Please enable them in settings.');
+      return;
+    }
+
+    final status = await Permission.scheduleExactAlarm.request();
+    if (status.isGranted) {
+      //Someday
+    } else {
+      print("Permission denied for scheduling exact alarms.");
+    }
+  }
+
+  void _showLocationDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enable Location Services'),
+        content:
+            const Text('Please turn on location services to start tracking.'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await Geolocator.openLocationSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Cancel',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    checkPerms();
     _getDetails(context);
   }
 
@@ -93,6 +159,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         bottomNavigationBar: GNav(
+            backgroundColor: Theme.of(context).colorScheme.primary,
             onTabChange: (index) {
               setState(() {
                 _currentPage = index;
@@ -114,29 +181,29 @@ class _HomePageState extends State<HomePage> {
               )
             ]),
         appBar: AppBar(
+          toolbarHeight: 60,
           title: const Text("Home page"),
           actions: <Widget>[
             IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ProfilePage()),
-                  );
-                },
-                icon: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                      20.0), // Adjust the radius as needed
-                  child: profilePic == null
-                      ? Image.asset(
-                          "assets/images/blankpfp.jpg",
-                          fit: BoxFit.cover,
-                        )
-                      : Image.network(
-                          profilePic!,
-                          fit: BoxFit.cover,
-                        ),
-                ))
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
+              icon: SizedBox(
+                height: 50,
+                width: 50,
+                child: CircleAvatar(
+                  radius: 30,
+                  backgroundImage: profilePic == null
+                      ? const AssetImage("assets/images/blankpfp.jpg")
+                          as ImageProvider
+                      : NetworkImage(profilePic!),
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
+            ),
           ],
           leading: Builder(
             builder: (context) {
@@ -154,14 +221,17 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
                 child: Row(
                   children: [
-                    ElevatedButton(
-                        onPressed: () => _logout(context),
-                        child: const Text("Logout")),
+                    Image.asset(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? "assets/images/Logo-Gold.png"
+                          : "assets/images/Logo.png",
+                      scale: 6,
+                    ),
                   ],
                 ),
               ),
@@ -183,6 +253,9 @@ class _HomePageState extends State<HomePage> {
                   });
                 },
               ),
+              ElevatedButton(
+                  onPressed: () => _logout(context),
+                  child: const Text("Logout")),
             ],
           ),
         ),

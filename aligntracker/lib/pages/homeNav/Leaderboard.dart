@@ -42,16 +42,20 @@ class _LeaderboardState extends State<Leaderboard> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      setState(() {
-        leaderboard.addAll(data['users']);
-        hasMore = data['hasMore'];
-        currentPage++;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          leaderboard.addAll(data['users']);
+          hasMore = data['hasMore'];
+          currentPage++;
+          isLoading = false;
+        });
+      }
     } else {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -68,9 +72,11 @@ class _LeaderboardState extends State<Leaderboard> {
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        user = jsonDecode(response.body);
-      });
+      if (mounted) {
+        setState(() {
+          user = jsonDecode(response.body);
+        });
+      }
     } else {
       final responseBody = jsonDecode(response.body);
       showToast(responseBody['error'], false);
@@ -138,57 +144,87 @@ class _LeaderboardState extends State<Leaderboard> {
         onRefresh: _handleRefresh,
         child: Stack(
           children: [
-            leaderboard.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollController,
-                    itemCount: leaderboard.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == leaderboard.length) {
-                        return isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : const SizedBox.shrink();
-                      } else {
-                        var user = leaderboard[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 20.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    (index + 1).toString(),
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(
-                                    width: 20.0,
-                                  ),
-                                  Container(
-                                    margin: const EdgeInsets.all(8.0),
-                                    width: 50.0,
-                                    height: 50.0,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        image: NetworkImage(
-                                          '$serverURL/api${user['profilePic']}',
+            Container(
+              color: Theme.of(context).colorScheme.surface,
+              height: 50,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Postion",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "User",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "Points",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 50),
+              child: leaderboard.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      controller: _scrollController,
+                      itemCount: leaderboard.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == leaderboard.length) {
+                          return isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : const SizedBox.shrink();
+                        } else {
+                          var user = leaderboard[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      (index + 1).toString(),
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(
+                                      width: 20.0,
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(8.0),
+                                      width: 50.0,
+                                      height: 50.0,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            '$serverURL/api${user['profilePic']}',
+                                          ),
+                                          fit: BoxFit.cover,
                                         ),
-                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                  ),
-                                  Text(user['displayName']),
-                                ],
-                              ),
-                              Text(user['points'].toString()),
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                  ),
+                                    Text(user['displayName']),
+                                  ],
+                                ),
+                                Text(user['points'].toString()),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
+            ),
             if (user != null)
               Positioned(
                 left: 0,
@@ -197,7 +233,7 @@ class _LeaderboardState extends State<Leaderboard> {
                 child: Container(
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: Theme.of(context).colorScheme.secondary,
                     borderRadius: BorderRadius.circular(20.0),
                   ),
                   margin: const EdgeInsets.symmetric(horizontal: 20.0),

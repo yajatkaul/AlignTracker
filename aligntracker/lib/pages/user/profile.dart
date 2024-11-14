@@ -152,7 +152,6 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: const Icon(
                 Icons.check_circle,
                 size: 35,
-                color: Colors.green,
               ))
         ],
       ),
@@ -175,20 +174,23 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: profilePic == null
-                    ? Image.network(
-                        "https://i.pinimg.com/736x/f6/bc/9a/f6bc9a75409c4db0acf3683bab1fab9c.jpg",
+                    ? Image.asset(
+                        "assets/images/blankpfp.jpg",
                         height: 160,
+                        width: 160,
                         fit: BoxFit.cover,
                       )
                     : !selectedFromGallery
                         ? Image.network(
                             profilePic!,
                             height: 160,
+                            width: 160,
                             fit: BoxFit.cover,
                           )
                         : Image.file(
                             galleryPic!,
                             height: 160,
+                            width: 160,
                             fit: BoxFit.cover,
                           ),
               ),

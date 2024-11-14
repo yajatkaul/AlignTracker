@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:aligntracker/auth/signup.dart';
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/home.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,10 +21,19 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
 
+  bool isLoading = false;
+
   Future<void> _login(BuildContext context) async {
+    if (isLoading) return;
+
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
@@ -48,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         showToast("Logged in successfully", true);
+        isLoading = false;
       }
 
       Navigator.pushReplacement(
@@ -59,6 +69,9 @@ class _LoginPageState extends State<LoginPage> {
         final responseBody = jsonDecode(response.body);
         final resultMessage = responseBody['error'] ?? 'Internal Server Error';
         showToast(resultMessage, false);
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }
@@ -95,9 +108,15 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Center(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Login Page"),
+            SizedBox(
+                height: 350,
+                child: LottieBuilder.asset('assets/lottie/buslogin.json')),
+            const SizedBox(
+              height: 10,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: TextField(
@@ -122,17 +141,19 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(
               height: 20,
             ),
-            ElevatedButton(
-                onPressed: () => _login(context), child: const Text("Login")),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignUp()),
-                );
-              },
-              child: const Text("Dont have an account?"),
-            )
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 60.0),
+              child: SizedBox(
+                height: 60,
+                child: ElevatedButton(
+                    onPressed: () => _login(context),
+                    child: isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            "Login",
+                          )),
+              ),
+            ),
           ],
         ),
       ),

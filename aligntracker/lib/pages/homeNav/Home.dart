@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/SitePage.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -39,42 +37,10 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void checkPerms() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    final status = await Permission.scheduleExactAlarm.request();
-    if (status.isGranted) {
-      // You can now set the exact alarm
-    } else {
-      // Handle the case where permission is denied
-      print("Permission denied");
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _getSites();
-    checkPerms();
   }
 
   Future<void> _handleRefresh() async {
@@ -90,17 +56,50 @@ class _HomeState extends State<Home> {
             ? ListView()
             : ListView(
                 children: sites.map((site) {
-                  return Card(
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SitePage(site: site),
+                  return Padding(
+                    padding:
+                        const EdgeInsets.only(left: 20, right: 20, bottom: 5),
+                    child: SizedBox(
+                      height: 60,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                            shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)))),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SitePage(site: site),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.local_shipping,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    site['siteName'] ?? 'No Title',
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                ],
+                              ),
+                              Text(site['timing'],
+                                  style: const TextStyle(fontSize: 15)),
+                            ],
                           ),
-                        );
-                      },
-                      title: Text(site['siteName'] ?? 'No Title'),
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),

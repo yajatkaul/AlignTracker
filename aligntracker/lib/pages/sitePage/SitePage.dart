@@ -56,7 +56,6 @@ Future<void> _trackLocation(String siteID) async {
   // Listen for changes in location services status
   Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
     if (status == ServiceStatus.enabled) {
-      print(status);
       http.post(
         Uri.parse('$serverURL/api/tracking/locationStatusChecker'),
         headers: <String, String>{
@@ -69,7 +68,6 @@ Future<void> _trackLocation(String siteID) async {
         }),
       );
     } else {
-      print(status);
       http.post(
         Uri.parse('$serverURL/api/tracking/locationStatusChecker'),
         headers: <String, String>{
@@ -119,12 +117,12 @@ class _SitePageState extends State<SitePage> {
 
     await service.configure(
       iosConfiguration: IosConfiguration(
-        autoStart: true,
+        autoStart: false,
         onForeground: onStart,
         onBackground: onIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
-        //autoStart: true,
+        autoStart: false,
         onStart: onStart,
         isForegroundMode: true,
         //autoStartOnBoot: true,
@@ -166,6 +164,59 @@ class _SitePageState extends State<SitePage> {
   }
 
   Future<void> _startTracking() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // If permissions are denied, show a message and return
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Location Permission Required'),
+            content:
+                Text('Please enable location permissions to start tracking.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
+    // Step 2: Check if location services are enabled
+    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationServiceEnabled) {
+      // Show a dialog to prompt the user to enable location services
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Enable Location Services'),
+          content:
+              const Text('Please turn on location services to start tracking.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Geolocator.openLocationSettings();
+              },
+              child: const Text('Open Settings'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     await initializeService();
     setState(() {
       started = true;
