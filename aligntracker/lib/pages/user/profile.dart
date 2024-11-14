@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:aligntracker/env.dart';
-import 'package:delightful_toast/delight_toast.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
@@ -52,11 +50,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-      showToast(responseBody['result'], true);
+      showToast(context, responseBody['result'], true);
       Navigator.pop(context);
     } else {
       final responseBody = jsonDecode(response.body);
-      showToast(responseBody['error'], false);
+      showToast(context, responseBody['error'], false);
     }
   }
 
@@ -103,34 +101,17 @@ class _ProfilePageState extends State<ProfilePage> {
       final responseBody = jsonDecode(response.body);
       if (mounted) {
         setState(() {
-          profilePic = '$serverURL/api${responseBody['profilePic']}';
+          responseBody['profilePic'] == null
+              ? profilePic = null
+              : profilePic = '$serverURL/api${responseBody['profilePic']}';
+
           _usernameController.text = responseBody['displayName'];
         });
       }
     } else {
       final responseBody = jsonDecode(response.body);
-      showToast(responseBody['error'], false);
+      showToast(context, responseBody['error'], false);
     }
-  }
-
-  void showToast(String message, bool success) {
-    DelightToastBar(
-      position: DelightSnackbarPosition.top,
-      autoDismiss: true,
-      builder: (context) => ToastCard(
-        leading: Icon(
-          success ? Icons.check_circle : Icons.flutter_dash,
-          size: 28,
-        ),
-        title: Text(
-          message,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    ).show(context);
   }
 
   @override

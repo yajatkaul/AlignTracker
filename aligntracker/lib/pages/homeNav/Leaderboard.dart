@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
-import 'package:delightful_toast/delight_toast.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
@@ -79,28 +77,8 @@ class _LeaderboardState extends State<Leaderboard> {
       }
     } else {
       final responseBody = jsonDecode(response.body);
-      showToast(responseBody['error'], false);
+      showToast(context, responseBody['error'], false);
     }
-  }
-
-  void showToast(String message, bool success) {
-    DelightToastBar(
-      position: DelightSnackbarPosition.top,
-      autoDismiss: true,
-      builder: (context) => ToastCard(
-        leading: Icon(
-          success ? Icons.check_circle : Icons.flutter_dash,
-          size: 28,
-        ),
-        title: Text(
-          message,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    ).show(context);
   }
 
   @override
@@ -142,8 +120,9 @@ class _LeaderboardState extends State<Leaderboard> {
       body: LiquidPullToRefresh(
         showChildOpacityTransition: false,
         onRefresh: _handleRefresh,
-        child: Stack(
+        child: Column(
           children: [
+            // Header Row Container
             Container(
               color: Theme.of(context).colorScheme.surface,
               height: 50,
@@ -153,7 +132,7 @@ class _LeaderboardState extends State<Leaderboard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Postion",
+                      "Position",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -171,8 +150,8 @@ class _LeaderboardState extends State<Leaderboard> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 50),
+
+            Expanded(
               child: leaderboard.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
@@ -197,9 +176,7 @@ class _LeaderboardState extends State<Leaderboard> {
                                       (index + 1).toString(),
                                       style: const TextStyle(fontSize: 16),
                                     ),
-                                    const SizedBox(
-                                      width: 20.0,
-                                    ),
+                                    const SizedBox(width: 20.0),
                                     Container(
                                       margin: const EdgeInsets.all(8.0),
                                       width: 50.0,
@@ -207,9 +184,12 @@ class _LeaderboardState extends State<Leaderboard> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         image: DecorationImage(
-                                          image: NetworkImage(
-                                            '$serverURL/api${user['profilePic']}',
-                                          ),
+                                          image: user['profilePic'] == null
+                                              ? const AssetImage(
+                                                  "assets/images/blankpfp.jpg")
+                                              : NetworkImage(
+                                                  '$serverURL/api${user['profilePic']}',
+                                                ),
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -225,42 +205,43 @@ class _LeaderboardState extends State<Leaderboard> {
                       },
                     ),
             ),
+
+            // User Info Container at the Bottom
             if (user != null)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 20.0,
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  margin: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 50.0,
-                            height: 50.0,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                    '$serverURL/api${user!['profilePic']}'),
-                                fit: BoxFit.cover,
-                              ),
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 20.0, vertical: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 50.0,
+                          height: 50.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: user!['profilePic'] == null
+                                  ? const AssetImage(
+                                      "assets/images/blankpfp.jpg")
+                                  : NetworkImage(
+                                      '$serverURL/api${user!['profilePic']}'),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          const SizedBox(width: 10.0),
-                          Text(user!['displayName']),
-                        ],
-                      ),
-                      Text(user!['points'].toString())
-                    ],
-                  ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        Text(user!['displayName']),
+                      ],
+                    ),
+                    Text(user!['points'].toString()),
+                  ],
                 ),
               ),
           ],

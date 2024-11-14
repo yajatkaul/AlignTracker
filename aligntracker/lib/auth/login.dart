@@ -2,15 +2,12 @@ import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/home.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:delightful_toast/delight_toast.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -56,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       if (mounted) {
-        showToast("Logged in successfully", true);
+        showToast(context, "Logged in successfully", true);
         isLoading = false;
       }
 
@@ -68,32 +65,12 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         final responseBody = jsonDecode(response.body);
         final resultMessage = responseBody['error'] ?? 'Internal Server Error';
-        showToast(resultMessage, false);
+        showToast(context, resultMessage, false);
         setState(() {
           isLoading = false;
         });
       }
     }
-  }
-
-  void showToast(String message, bool success) {
-    DelightToastBar(
-      position: DelightSnackbarPosition.top,
-      autoDismiss: true,
-      builder: (context) => ToastCard(
-        leading: Icon(
-          success ? Icons.check_circle : Icons.flutter_dash,
-          size: 28,
-        ),
-        title: Text(
-          message,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    ).show(context);
   }
 
   @override

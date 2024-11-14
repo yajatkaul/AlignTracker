@@ -45,6 +45,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 // Make _trackLocation a top-level function as well
 Future<void> _trackLocation(String siteID) async {
+  print("Called");
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final sessionCookie = prefs.getString('session_cookie');
 
@@ -110,19 +111,19 @@ class SitePage extends StatefulWidget {
 }
 
 class _SitePageState extends State<SitePage> {
-  bool started = true;
-  bool finished = false;
+  bool? started;
+  bool? finished;
   Future<void> initializeService() async {
     final service = FlutterBackgroundService();
 
     await service.configure(
       iosConfiguration: IosConfiguration(
-        autoStart: false,
+        autoStart: true,
         onForeground: onStart,
         onBackground: onIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
-        autoStart: false,
+        autoStart: true,
         onStart: onStart,
         isForegroundMode: true,
         //autoStartOnBoot: true,
@@ -233,7 +234,7 @@ class _SitePageState extends State<SitePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text("Employee ID: ${widget.site['employeeId']}"),
             Text(
@@ -241,12 +242,23 @@ class _SitePageState extends State<SitePage> {
             Text("Timing: ${widget.site['timing']}"),
             Text("Created At: ${widget.site['createdAt']}"),
             Text("Updated At: ${widget.site['updatedAt']}"),
-            if (!started)
+            const SizedBox(
+              height: 15,
+            ),
+            if (started == null && finished == null)
+              const Center(
+                child: SizedBox(
+                    height: 50, width: 50, child: CircularProgressIndicator()),
+              ),
+            if (started != null && started == false)
               SlideAction(
                 text: "Start",
                 onSubmit: _startTracking,
               ),
-            if (started == true && finished == false)
+            if (finished != null &&
+                started != null &&
+                finished == false &&
+                started == true)
               ElevatedButton(
                   onPressed: () async {
                     final result = await Navigator.push(

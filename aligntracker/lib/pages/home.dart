@@ -6,9 +6,7 @@ import 'package:aligntracker/pages/homeNav/Home.dart';
 import 'package:aligntracker/pages/homeNav/Leaderboard.dart';
 import 'package:aligntracker/pages/homeNav/Profile.dart';
 import 'package:aligntracker/pages/user/profile.dart';
-import 'package:delightful_toast/delight_toast.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -56,12 +54,14 @@ class _HomePageState extends State<HomePage> {
       final responseBody = jsonDecode(response.body);
       if (mounted) {
         setState(() {
-          profilePic = '$serverURL/api${responseBody['profilePic']}';
+          responseBody['profilePic'] == null
+              ? profilePic = null
+              : profilePic = '$serverURL/api${responseBody['profilePic']}';
         });
       }
     } else {
       final responseBody = jsonDecode(response.body);
-      showToast(responseBody['error'], false);
+      showToast(context, responseBody['error'], false);
     }
   }
 
@@ -133,26 +133,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     checkPerms();
     _getDetails(context);
-  }
-
-  void showToast(String message, bool success) {
-    DelightToastBar(
-      position: DelightSnackbarPosition.top,
-      autoDismiss: true,
-      builder: (context) => ToastCard(
-        leading: Icon(
-          success ? Icons.check_circle : Icons.flutter_dash,
-          size: 28,
-        ),
-        title: Text(
-          message,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    ).show(context);
   }
 
   @override
