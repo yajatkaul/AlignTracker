@@ -45,6 +45,7 @@ export const trackSite = async (req, res) => {
     const { siteID, latitude, longitude } = req.body;
 
     const trackSite = await Tracking.findOne({ siteID });
+    const site = await Site.findById(siteID);
 
     const formattedTime = moment().format("h:mm A");
     const formattedStartTime = moment().format("MM/DD/YY h:mm A");
@@ -61,8 +62,10 @@ export const trackSite = async (req, res) => {
         pauses: [],
       });
 
+      site.started = true;
       newTrackSite.locations.push([latitude, longitude, formattedTime]);
       await newTrackSite.save();
+      await site.save();
 
       return res.status(200).json({ result: "Successful" });
     }
