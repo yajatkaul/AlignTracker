@@ -15,6 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String? activeSiteID;
   List<dynamic> sites = [];
   Future<void> _getSites() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -92,6 +93,11 @@ class _HomeState extends State<Home> {
                                     site['siteName'] ?? 'No Title',
                                     style: const TextStyle(fontSize: 24),
                                   ),
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                  if (site['started'] == true)
+                                    const Icon(Icons.run_circle_rounded)
                                 ],
                               ),
                               Text(site['timing'],

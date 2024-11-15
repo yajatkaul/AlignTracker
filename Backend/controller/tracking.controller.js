@@ -64,11 +64,11 @@ export const trackSite = async (req, res) => {
       newTrackSite.locations.push([latitude, longitude, formattedTime]);
       await newTrackSite.save();
 
-      return res.status(200);
+      return res.status(200).json({ result: "Successful" });
     }
 
     if (trackSite.finished) {
-      return res.status(200);
+      return res.status(400).json({ result: "Already finished" });
     }
 
     if (!trackSite.started) {
@@ -78,7 +78,7 @@ export const trackSite = async (req, res) => {
     trackSite.locations.push([latitude, longitude, formattedTime]);
     await trackSite.save();
 
-    return res.status(200);
+    return res.status(200).json({ result: "Successful" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -96,7 +96,7 @@ export const locationStatusChecker = async (req, res) => {
     trackSite.locationStatus.push([status, formattedTime]);
     await trackSite.save();
 
-    return res.status(200);
+    return res.status(200).json({ result: "Successful" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -126,7 +126,7 @@ export const completeSite = async (req, res) => {
     await user.save();
     await site.save();
 
-    return res.status(200);
+    return res.status(200).json({ result: "Successful" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });

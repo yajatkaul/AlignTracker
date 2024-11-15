@@ -1,7 +1,5 @@
 import 'package:aligntracker/env.dart';
-import 'package:delightful_toast/delight_toast.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -85,7 +83,10 @@ class _CompletesiteState extends State<Completesite> {
 
     try {
       var response = await request.send();
+      print(response.statusCode);
       if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('siteID');
         print('Images uploaded successfully!');
       } else {
         print('Failed to upload images. Status code: ${response.statusCode}');
@@ -102,33 +103,13 @@ class _CompletesiteState extends State<Completesite> {
 
   @override
   Widget build(BuildContext context) {
-    void showToast(String message, bool success) {
-      DelightToastBar(
-        position: DelightSnackbarPosition.top,
-        autoDismiss: true,
-        builder: (context) => ToastCard(
-          leading: Icon(
-            success ? Icons.check_circle : Icons.flutter_dash,
-            size: 28,
-          ),
-          title: Text(
-            message,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ).show(context);
-    }
-
     Future<void> uploadProcess() async {
       if (yourImage == null || siteImages == []) {
-        showToast("Submit all the images", false);
+        showToast(context, "Submit all the images", false);
         return;
       }
 
-      uploadImages();
+      await uploadImages();
       if (mounted) {
         Navigator.pop(context, 1);
       }

@@ -22,9 +22,12 @@ const siteSchema = new Schema(
       type: String,
       required: true,
     },
+    started: {
+      type: Boolean,
+      default: false,
+    },
     finished: {
       type: Boolean,
-      required: true,
       default: false,
     },
   },

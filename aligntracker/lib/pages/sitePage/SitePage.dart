@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/CompleteSite.dart';
+import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,11 +15,18 @@ import 'package:http/http.dart' as http;
 void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  service.on('setSiteID').listen((data) {
-    if (data != null && data['siteID'] != null) {
-      _trackLocation(data['siteID']);
-    }
-  });
+  final prefs = await SharedPreferences.getInstance();
+  final siteID = prefs.getString('siteID');
+
+  if (siteID != null) {
+    _trackLocation(siteID);
+  }
+
+  // service.on('setSiteID').listen((data) {
+  //   if (data != null && data['siteID'] != null) {
+  //     _trackLocation(data['siteID']);
+  //   }
+  // });
 
   service.on("stop").listen((event) {
     service.stopSelf();
@@ -34,11 +42,19 @@ void onStart(ServiceInstance service) async {
 @pragma('vm:entry-point')
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
-  service.on('setSiteID').listen((data) {
-    if (data != null && data['siteID'] != null) {
-      _trackLocation(data['siteID']);
-    }
-  });
+
+  final prefs = await SharedPreferences.getInstance();
+  final siteID = prefs.getString('siteID');
+
+  if (siteID != null) {
+    _trackLocation(siteID);
+  }
+
+  // service.on('setSiteID').listen((data) {
+  //   if (data != null && data['siteID'] != null) {
+  //     _trackLocation(data['siteID']);
+  //   }
+  // });
 
   return true;
 }
@@ -132,7 +148,10 @@ class _SitePageState extends State<SitePage> {
     );
 
     await service.startService();
-    service.invoke('setSiteID', {"siteID": widget.site['_id']});
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('siteID', widget.site['_id']);
+    // service.invoke('setSiteID', {"siteID": widget.site['_id']});
   }
 
   Future<void> stopService() async {
@@ -174,13 +193,13 @@ class _SitePageState extends State<SitePage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Location Permission Required'),
-            content:
-                Text('Please enable location permissions to start tracking.'),
+            title: const Text('Location Permission Required'),
+            content: const Text(
+                'Please enable location permissions to start tracking.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           ),
@@ -216,6 +235,13 @@ class _SitePageState extends State<SitePage> {
           ],
         ),
       );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('siteID') != null) {
+      print(prefs.getString('siteID'));
+      showToast(context, "You have already started a site", false);
       return;
     }
 

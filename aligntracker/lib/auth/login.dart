@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-                height: 350,
+                height: 300,
                 child: LottieBuilder.asset('assets/lottie/buslogin.json')),
             const SizedBox(
               height: 10,
