@@ -113,24 +113,25 @@ class SitePage extends StatefulWidget {
 class _SitePageState extends State<SitePage> {
   bool? started;
   bool? finished;
+
   Future<void> initializeService() async {
     final service = FlutterBackgroundService();
 
     await service.configure(
       iosConfiguration: IosConfiguration(
-        autoStart: true,
+        autoStart: false,
         onForeground: onStart,
         onBackground: onIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
-        autoStart: true,
+        autoStart: false,
         onStart: onStart,
         isForegroundMode: true,
         //autoStartOnBoot: true,
       ),
     );
 
-    service.startService();
+    await service.startService();
     service.invoke('setSiteID', {"siteID": widget.site['_id']});
   }
 
