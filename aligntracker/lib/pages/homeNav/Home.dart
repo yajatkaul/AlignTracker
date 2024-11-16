@@ -36,7 +36,7 @@ class _HomeState extends State<Home> {
     if (response.statusCode == 200) {
       if (mounted) {
         setState(() {
-          sites = jsonDecode(response.body);
+          sites = jsonDecode(response.body)['sites'];
           loaded = true;
         });
       }

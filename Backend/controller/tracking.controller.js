@@ -29,14 +29,21 @@ export const createSite = async (req, res) => {
 
 export const getSites = async (req, res) => {
   try {
-    const { completed } = req.query;
+    const { completed, page = 1, limit = 1000 } = req.query;
+
+    const totalSites = await Site.countDocuments();
 
     const sites = await Site.find({
       employeeId: req.session.userId,
       finished: completed,
-    });
+    })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select("-password");
 
-    res.status(200).json(sites);
+    const hasMore = page * limit < totalSites;
+
+    res.status(200).json({ sites, hasMore });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -172,8 +179,18 @@ export const checkSiteStatus = async (req, res) => {
 
 export const getAllTracking = async (req, res) => {
   try {
-    const sites = await Site.find();
-    return res.status(200).json(sites);
+    const { page = 1, limit = 15 } = req.query;
+
+    const totalUsers = await Site.countDocuments();
+
+    const sites = await Site.find()
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select("-password");
+
+    const hasMore = page * limit < totalUsers;
+
+    return res.status(200).json({ sites, hasMore });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal server error" });

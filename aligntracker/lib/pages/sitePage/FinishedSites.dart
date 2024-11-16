@@ -15,15 +15,28 @@ class Finishedsites extends StatefulWidget {
 }
 
 class _FinishedsitesState extends State<Finishedsites> {
-  bool loaded = false;
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
+
   List<dynamic> sites = [];
+  final ScrollController _scrollController = ScrollController();
 
   Future<void> _getSites() async {
+    if (isLoading || !hasMore) return;
+
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final sessionCookie = prefs.getString('session_cookie');
 
     final response = await http.get(
-      Uri.parse('$serverURL/api/tracking/getSites?completed=true'),
+      Uri.parse(
+          '$serverURL/api/tracking/getSites?completed=true&page=$currentPage&limit=14'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Cookie': sessionCookie!,
@@ -31,10 +44,20 @@ class _FinishedsitesState extends State<Finishedsites> {
     );
 
     if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print(data);
       if (mounted) {
         setState(() {
-          sites = jsonDecode(response.body);
-          loaded = true;
+          sites.addAll(data['sites']);
+          hasMore = data['hasMore'];
+          currentPage++;
+          isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
         });
       }
     }
@@ -44,6 +67,22 @@ class _FinishedsitesState extends State<Finishedsites> {
   void initState() {
     super.initState();
     _getSites();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent) {
+          _getSites();
+          print("Called");
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,6 +92,7 @@ class _FinishedsitesState extends State<Finishedsites> {
         title: const Text("Finished Sites"),
       ),
       body: ListView(
+        controller: _scrollController,
         children: sites.map((site) {
           return Padding(
             padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),

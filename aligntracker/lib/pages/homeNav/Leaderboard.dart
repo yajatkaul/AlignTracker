@@ -18,7 +18,7 @@ class _LeaderboardState extends State<Leaderboard> {
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   Map<String, dynamic>? user;
 
@@ -27,9 +27,11 @@ class _LeaderboardState extends State<Leaderboard> {
   Future<void> _getLeaderboard() async {
     if (isLoading || !hasMore) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
 
     final response = await http.get(
       Uri.parse('$serverURL/api/user/leaderboard?page=$currentPage&limit=15'),

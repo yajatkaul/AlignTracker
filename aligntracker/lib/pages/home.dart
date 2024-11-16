@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:aligntracker/auth/login.dart';
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/homeNav/Home.dart';
 import 'package:aligntracker/pages/homeNav/Leaderboard.dart';
@@ -25,19 +24,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? profilePic;
 
+  String? role;
+
   List<Widget> pages = [const Home(), const Leaderboard(), const Profile()];
   int _currentPage = 0;
   int _selectedIndex = 0;
-
-  Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('session_cookie');
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
-  }
 
   Future<void> _getDetails(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -58,6 +49,7 @@ class _HomePageState extends State<HomePage> {
           responseBody['profilePic'] == null
               ? profilePic = null
               : profilePic = '$serverURL/api${responseBody['profilePic']}';
+          role = responseBody['role'];
         });
       }
     } else {
@@ -225,15 +217,17 @@ class _HomePageState extends State<HomePage> {
                   });
                 },
               ),
-              ListTile(
-                title: const Text('Admin View'),
-                selected: _selectedIndex == 2,
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const Adminsiteview();
-                  }));
-                },
-              ),
+              if (role != null && role == "Admin")
+                ListTile(
+                  title: const Text('Admin View'),
+                  selected: _selectedIndex == 2,
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return const Adminsiteview();
+                    }));
+                  },
+                ),
             ],
           ),
         ),

@@ -155,7 +155,7 @@ class _ProfileState extends State<Profile> {
                             borderRadius: BorderRadius.circular(20)))),
                     child: const Text(
                       "Logout",
-                      style: TextStyle(fontSize: 24),
+                      style: TextStyle(fontSize: 18),
                     )),
               ),
             )
