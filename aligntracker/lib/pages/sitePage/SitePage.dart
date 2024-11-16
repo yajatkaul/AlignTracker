@@ -6,10 +6,13 @@ import 'package:aligntracker/pages/sitePage/CompleteSite.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:url_launcher/url_launcher_string.dart';
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
@@ -252,6 +255,23 @@ class _SitePageState extends State<SitePage> {
     });
   }
 
+  CameraPosition get _initialCameraPosition {
+    return CameraPosition(
+      target: LatLng(
+        double.parse(widget.site['latitude']),
+        double.parse(widget.site['longitude']),
+      ),
+      zoom: 11.5,
+    );
+  }
+
+  Future<void> _googlemaps() async {
+    String googleMaps =
+        "https://www.google.com/maps/search/?api=1&query=${widget.site['latitude']},${widget.site['longitude']}";
+
+    await launchUrlString(googleMaps);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -261,16 +281,62 @@ class _SitePageState extends State<SitePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text("Employee ID: ${widget.site['employeeId']}"),
-            Text(
-                "Location: ${widget.site['latitude']}, ${widget.site['longitude']}"),
-            Text("Timing: ${widget.site['timing']}"),
-            Text("Created At: ${widget.site['createdAt']}"),
-            Text("Updated At: ${widget.site['updatedAt']}"),
-            const SizedBox(
-              height: 15,
+            Column(
+              children: [
+                SizedBox(
+                    height: 250,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: GoogleMap(
+                        initialCameraPosition: _initialCameraPosition,
+                        markers: {
+                          Marker(
+                              markerId: const MarkerId("SiteLocation"),
+                              position: LatLng(
+                                  double.parse(widget.site['latitude']),
+                                  double.parse(widget.site['longitude'])))
+                        },
+                      ),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: _googlemaps,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 30,
+                          ),
+                          SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          Text(
+                            "Open in Google Maps",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  "Time: ${widget.site['timing']}",
+                  style: const TextStyle(fontSize: 20),
+                )
+              ],
             ),
             if (started == null && finished == null)
               const Center(

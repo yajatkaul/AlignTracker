@@ -3,12 +3,15 @@ import {
   checkSiteStatus,
   completeSite,
   createSite,
+  getAllTracking,
   getSites,
+  getTracking,
   locationStatusChecker,
   trackSite,
 } from "../controller/tracking.controller.js";
 import upload from "../utils/multer.js";
 import multer from "multer";
+import checkAdmin from "../middleware/checkAdmin.js";
 
 const router = express.Router();
 
@@ -40,5 +43,9 @@ router.post("/completeSite", (req, res, next) => {
     completeSite(req, res, next);
   });
 });
+
+router.get("/getTracking", getTracking);
+
+router.get("/admin/trackingData", checkAdmin, getAllTracking);
 
 export default router;

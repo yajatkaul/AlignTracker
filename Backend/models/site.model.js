@@ -10,6 +10,10 @@ const siteSchema = new Schema(
       type: String,
       required: true,
     },
+    employeeName: {
+      type: String,
+      required: true,
+    },
     latitude: {
       type: String,
       required: true,

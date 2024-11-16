@@ -5,6 +5,7 @@ import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/homeNav/Home.dart';
 import 'package:aligntracker/pages/homeNav/Leaderboard.dart';
 import 'package:aligntracker/pages/homeNav/Profile.dart';
+import 'package:aligntracker/pages/sitePage/AdminSiteView.dart';
 import 'package:aligntracker/pages/user/profile.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
@@ -225,17 +226,14 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                title: const Text('School'),
+                title: const Text('Admin View'),
                 selected: _selectedIndex == 2,
                 onTap: () {
-                  setState(() {
-                    _selectedIndex = 2;
-                  });
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const Adminsiteview();
+                  }));
                 },
               ),
-              ElevatedButton(
-                  onPressed: () => _logout(context),
-                  child: const Text("Logout")),
             ],
           ),
         ),

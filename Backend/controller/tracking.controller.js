@@ -7,9 +7,12 @@ export const createSite = async (req, res) => {
   try {
     const { latitude, longitude, siteName, employeeId, timing } = req.body;
 
+    const user = await User.findById(employeeId);
+
     const newSite = new Site({
       siteName,
       employeeId,
+      employeeName: user.displayName,
       latitude,
       longitude,
       timing,
@@ -34,6 +37,19 @@ export const getSites = async (req, res) => {
     });
 
     res.status(200).json(sites);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getTracking = async (req, res) => {
+  try {
+    const { siteID } = req.query;
+
+    const trackingData = await Tracking.findOne({ siteID });
+
+    res.status(200).json(trackingData);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -149,5 +165,17 @@ export const checkSiteStatus = async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//Admin
+
+export const getAllTracking = async (req, res) => {
+  try {
+    const sites = await Site.find();
+    return res.status(200).json(sites);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
