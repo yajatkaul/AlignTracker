@@ -179,11 +179,38 @@ export const checkSiteStatus = async (req, res) => {
 
 export const getAllTracking = async (req, res) => {
   try {
-    const { page = 1, limit = 15 } = req.query;
+    const {
+      page = 1,
+      limit = 15,
+      dateStart,
+      dateEnd,
+      name,
+      siteName,
+    } = req.query;
+    console.log(req.query);
+    // Build the filter object for MongoDB
+    let filterConditions = { finished: true };
 
-    const totalUsers = await Site.countDocuments({ finished: true });
+    // Filter by date range (if provided)
+    if (dateStart || dateEnd) {
+      filterConditions.createdAt = {};
+      if (dateStart) filterConditions.createdAt.$gte = new Date(dateStart);
+      if (dateEnd) filterConditions.createdAt.$lte = new Date(dateEnd);
+    }
 
-    const sites = await Site.find({ finished: true })
+    // Filter by site name (if provided)
+    if (siteName) {
+      filterConditions.siteName = { $regex: siteName, $options: "i" }; // Case-insensitive search
+    }
+
+    // Filter by employee name (if provided)
+    if (name) {
+      filterConditions.employeeName = { $regex: name, $options: "i" }; // Case-insensitive search
+    }
+
+    const totalUsers = await Site.countDocuments(filterConditions);
+
+    const sites = await Site.find(filterConditions)
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .select("-password");

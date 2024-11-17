@@ -5,7 +5,6 @@ import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/FinishedSites.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 

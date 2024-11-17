@@ -35,9 +35,24 @@ class _AdminsiteviewState extends State<Adminsiteview> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final sessionCookie = prefs.getString('session_cookie');
 
+    String url =
+        '$serverURL/api/tracking/admin/trackingData?page=$currentPage&limit=14';
+
+    if (filterSitename != null && filterSitename!.isNotEmpty) {
+      url += '&siteName=$filterSitename';
+    }
+    if (filterName != null && filterName!.isNotEmpty) {
+      url += '&name=$filterName';
+    }
+    if (filterDateStart != null) {
+      url += '&dateStart=${filterDateStart!.toIso8601String()}';
+    }
+    if (filterDateEnd != null) {
+      url += '&dateEnd=${filterDateEnd!.toIso8601String()}';
+    }
+
     final response = await http.get(
-      Uri.parse(
-          '$serverURL/api/tracking/admin/trackingData?page=$currentPage&limit=14'),
+      Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Cookie': sessionCookie!,
@@ -68,6 +83,9 @@ class _AdminsiteviewState extends State<Adminsiteview> {
     super.initState();
     _getSites();
 
+    siteNameController.text = filterSitename ?? '';
+    employeeNameController.text = filterName ?? '';
+
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge) {
         if (_scrollController.position.pixels ==
@@ -76,6 +94,11 @@ class _AdminsiteviewState extends State<Adminsiteview> {
         }
       }
     });
+  }
+
+  void clearFilters() {
+    siteNameController.text = "";
+    employeeNameController.text = "";
   }
 
   Future<void> _handleRefresh() async {
@@ -91,15 +114,194 @@ class _AdminsiteviewState extends State<Adminsiteview> {
 
   @override
   void dispose() {
+    siteNameController.dispose();
+    employeeNameController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
+
+  //filters
+  TextEditingController siteNameController = TextEditingController();
+  TextEditingController employeeNameController = TextEditingController();
+  String? filterName, filterSitename;
+  DateTime? filterDateStart, filterDateEnd;
+  //
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Finished Sites"),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return StatefulBuilder(
+                      builder:
+                          (BuildContext context, StateSetter setModalState) {
+                        // ignore: sized_box_for_whitespace
+                        return Container(
+                          height: 450,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Filters",
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                TextField(
+                                  controller: siteNameController,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      filterSitename = value;
+                                    });
+                                  },
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Site Name",
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                TextField(
+                                  controller: employeeNameController,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      filterName = value;
+                                    });
+                                  },
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Employee Name",
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                SizedBox(
+                                  height: 60,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      DateTime? pickedDate =
+                                          await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2100),
+                                      );
+
+                                      if (pickedDate != null) {
+                                        setModalState(() {
+                                          filterDateStart = pickedDate;
+                                        });
+                                      }
+                                    },
+                                    style: ButtonStyle(
+                                        shape: WidgetStatePropertyAll(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        20)))),
+                                    child: Text(filterDateStart == null
+                                        ? "Date"
+                                        : "Start Date: ${filterDateStart!.day}/${filterDateStart!.month}/${filterDateStart!.year}"),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                SizedBox(
+                                  height: 60,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      DateTime? pickedDate =
+                                          await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2100),
+                                      );
+
+                                      if (pickedDate != null) {
+                                        setModalState(() {
+                                          filterDateEnd = pickedDate;
+                                        });
+                                      }
+                                    },
+                                    style: ButtonStyle(
+                                        shape: WidgetStatePropertyAll(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        20)))),
+                                    child: Text(filterDateEnd == null
+                                        ? "Date"
+                                        : "End Date: ${filterDateEnd!.day}/${filterDateEnd!.month}/${filterDateEnd!.year}"),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          currentPage = 1;
+                                          hasMore = true;
+                                          sites = [];
+                                          _getSites();
+
+                                          Navigator.pop(context, 1);
+                                        },
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.search),
+                                            Text("Search")
+                                          ],
+                                        )),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          setModalState(() {
+                                            filterDateEnd = null;
+                                            filterDateStart = null;
+                                            filterName = null;
+                                            filterSitename = null;
+                                            currentPage = 1;
+                                            hasMore = true;
+                                            sites = [];
+                                          });
+
+                                          clearFilters();
+                                          _getSites();
+                                        },
+                                        child: const Icon(Icons.refresh))
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+                ;
+              },
+              icon: const Icon(
+                Icons.filter_alt_outlined,
+                size: 35,
+              ))
+        ],
       ),
       body: LiquidPullToRefresh(
         onRefresh: _handleRefresh,
@@ -143,7 +345,10 @@ class _AdminsiteviewState extends State<Adminsiteview> {
                               style: const TextStyle(fontSize: 18),
                             ),
                           ),
-                          Text(site['employeeName'] ?? "No Name",softWrap: true,),
+                          Text(
+                            site['employeeName'] ?? "No Name",
+                            softWrap: true,
+                          ),
                           const Icon(Icons.check)
                         ],
                       ),
