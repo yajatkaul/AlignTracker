@@ -107,15 +107,12 @@ class _HomeState extends State<Home> {
                                         width: 10,
                                       ),
                                       SizedBox(
-                                        width: 160,
+                                        width: 145,
                                         child: Text(
                                           site['siteName'] ?? 'No Title',
                                           softWrap: true,
                                           style: const TextStyle(fontSize: 24),
                                         ),
-                                      ),
-                                      const SizedBox(
-                                        width: 4,
                                       ),
                                       if (site['started'] == true)
                                         const Icon(Icons.run_circle_rounded)

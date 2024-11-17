@@ -154,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
-                child: profilePic == null
+                child: profilePic == null && !selectedFromGallery
                     ? Image.asset(
                         "assets/images/blankpfp.jpg",
                         height: 160,

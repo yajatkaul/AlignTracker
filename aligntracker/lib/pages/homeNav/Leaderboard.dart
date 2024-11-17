@@ -157,6 +157,7 @@ class _LeaderboardState extends State<Leaderboard> {
               child: leaderboard.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       controller: _scrollController,
                       itemCount: leaderboard.length + 1,
                       itemBuilder: (context, index) {

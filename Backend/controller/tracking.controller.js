@@ -181,9 +181,9 @@ export const getAllTracking = async (req, res) => {
   try {
     const { page = 1, limit = 15 } = req.query;
 
-    const totalUsers = await Site.countDocuments();
+    const totalUsers = await Site.countDocuments({ finished: true });
 
-    const sites = await Site.find()
+    const sites = await Site.find({ finished: true })
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .select("-password");

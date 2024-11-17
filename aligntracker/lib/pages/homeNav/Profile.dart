@@ -5,6 +5,7 @@ import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/FinishedSites.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -100,16 +101,14 @@ class _ProfileState extends State<Profile> {
                     const SizedBox(
                       width: 10,
                     ),
-                    Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            name ?? "Name",
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                          Text(employeeId ?? "Employee Id"),
-                        ]),
+                    SizedBox(
+                      width: 140,
+                      child: Text(
+                        name ?? "Name",
+                        softWrap: true,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                    ),
                   ],
                 ),
                 Text(points ?? "Points")
@@ -137,6 +136,7 @@ class _ProfileState extends State<Profile> {
                             borderRadius: BorderRadius.circular(20)))),
                     child: const Text(
                       "Previous Sites",
+                      textAlign: TextAlign.center,
                       softWrap: true,
                       style: TextStyle(fontSize: 18),
                     )),

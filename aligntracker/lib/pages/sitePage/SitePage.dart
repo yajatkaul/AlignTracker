@@ -36,9 +36,10 @@ void onStart(ServiceInstance service) async {
     print("Background service stopped");
   });
 
-  Timer.periodic(const Duration(seconds: 1), (timer) {
-    print("Service running at ${DateTime.now().second}");
-  });
+  //Debugging
+  // Timer.periodic(const Duration(seconds: 1), (timer) {
+  //   print("Service running at ${DateTime.now().second}");
+  // });
 }
 
 // Move onIosBackground to a top-level function
@@ -70,8 +71,58 @@ Future<void> _trackLocation(String siteID) async {
 
   LocationSettings locationSettings = const LocationSettings(
     accuracy: LocationAccuracy.high,
-    distanceFilter: 100,
+    //distanceFilter: 100,
   );
+
+  //1st time
+  try {
+    Position position =
+        await Geolocator.getCurrentPosition(locationSettings: locationSettings);
+
+    print("Sending location: ${position.latitude}, ${position.longitude}");
+
+    // Send location to the server
+    await http.post(
+      Uri.parse('$serverURL/api/tracking/trackSite'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Cookie': sessionCookie!,
+      },
+      body: jsonEncode(<String, String>{
+        'siteID': siteID,
+        'latitude': '${position.latitude}',
+        'longitude': '${position.longitude}',
+      }),
+    );
+  } catch (e) {
+    print("Error while fetching location: $e");
+  }
+
+  //Timer
+  Timer.periodic(const Duration(hours: 1), (timer) async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          locationSettings: locationSettings);
+
+      print("Sending location: ${position.latitude}, ${position.longitude}");
+
+      // Send location to the server
+      await http.post(
+        Uri.parse('$serverURL/api/tracking/trackSite'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cookie': sessionCookie!,
+        },
+        body: jsonEncode(<String, String>{
+          'siteID': siteID,
+          'latitude': '${position.latitude}',
+          'longitude': '${position.longitude}',
+        }),
+      );
+    } catch (e) {
+      print("Error while fetching location: $e");
+    }
+  });
 
   // Listen for changes in location services status
   Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
@@ -102,22 +153,23 @@ Future<void> _trackLocation(String siteID) async {
     }
   });
 
-  Geolocator.getPositionStream(locationSettings: locationSettings)
-      .listen((Position position) {
-    print(position.latitude);
-    http.post(
-      Uri.parse('$serverURL/api/tracking/trackSite'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Cookie': sessionCookie!,
-      },
-      body: jsonEncode(<String, String>{
-        'siteID': siteID,
-        'latitude': '${position.latitude}',
-        'longitude': '${position.longitude}',
-      }),
-    );
-  });
+  // For constant updates
+  // Geolocator.getPositionStream(locationSettings: locationSettings)
+  //     .listen((Position position) {
+  //   print(position.latitude);
+  //   http.post(
+  //     Uri.parse('$serverURL/api/tracking/trackSite'),
+  //     headers: <String, String>{
+  //       'Content-Type': 'application/json; charset=UTF-8',
+  //       'Cookie': sessionCookie!,
+  //     },
+  //     body: jsonEncode(<String, String>{
+  //       'siteID': siteID,
+  //       'latitude': '${position.latitude}',
+  //       'longitude': '${position.longitude}',
+  //     }),
+  //   );
+  // });
 }
 
 class SitePage extends StatefulWidget {
@@ -150,10 +202,11 @@ class _SitePageState extends State<SitePage> {
       ),
     );
 
-    await service.startService();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('siteID', widget.site['_id']);
+
+    await service.startService();
+
     // service.invoke('setSiteID', {"siteID": widget.site['_id']});
   }
 

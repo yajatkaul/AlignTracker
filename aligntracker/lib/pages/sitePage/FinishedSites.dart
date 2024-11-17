@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/siteFinalData/page.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
@@ -79,6 +80,17 @@ class _FinishedsitesState extends State<Finishedsites> {
     });
   }
 
+  Future<void> _handleRefresh() async {
+    if (mounted) {
+      setState(() {
+        currentPage = 1;
+        hasMore = true;
+        sites = [];
+      });
+    }
+    await _getSites();
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -91,58 +103,60 @@ class _FinishedsitesState extends State<Finishedsites> {
       appBar: AppBar(
         title: const Text("Finished Sites"),
       ),
-      body: ListView(
-        controller: _scrollController,
-        children: sites.map((site) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
-            child: ElevatedButton(
-              style: ButtonStyle(
-                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)))),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            FinalSitePage(siteId: site['_id'])));
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.local_shipping,
-                          size: 24,
-                        ),
-                        const SizedBox(
-                          width: 10,
-                          height: 70,
-                        ),
-                        SizedBox(
-                          width: 160,
-                          child: Text(
-                            site['siteName'] ?? 'No Title',
-                            softWrap: true,
-                            style: const TextStyle(fontSize: 24),
+      body: LiquidPullToRefresh(
+        onRefresh: _handleRefresh,
+        child: ListView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: sites.map((site) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
+              child: ElevatedButton(
+                style: ButtonStyle(
+                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)))),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              FinalSitePage(siteId: site['_id'])));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.local_shipping,
+                            size: 24,
                           ),
-                        ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        const Icon(Icons.check)
-                      ],
-                    ),
-                    Text(site['timing'], style: const TextStyle(fontSize: 15)),
-                  ],
+                          const SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          SizedBox(
+                            width: 160,
+                            child: Text(
+                              site['siteName'] ?? 'No Title',
+                              softWrap: true,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ),
+                          const Icon(Icons.check)
+                        ],
+                      ),
+                      Text(site['timing'],
+                          style: const TextStyle(fontSize: 15)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

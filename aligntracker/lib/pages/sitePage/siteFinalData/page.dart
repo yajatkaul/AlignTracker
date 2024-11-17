@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,10 +170,18 @@ class _FinalSitePageState extends State<FinalSitePage> {
                 height: 300,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(25),
-                  child: GoogleMap(
-                    initialCameraPosition: _initialCameraPosition,
-                    markers: markers,
-                    polylines: polylines,
+                  child: GestureDetector(
+                    onVerticalDragUpdate:
+                        (_) {}, // Prevents vertical drag gestures.
+                    child: GoogleMap(
+                      initialCameraPosition: _initialCameraPosition,
+                      markers: markers,
+                      polylines: polylines,
+                      gestureRecognizers: Set()
+                        ..add(Factory<OneSequenceGestureRecognizer>(
+                          () => EagerGestureRecognizer(),
+                        )), // Enables map gestures.
+                    ),
                   ),
                 ),
               ),
