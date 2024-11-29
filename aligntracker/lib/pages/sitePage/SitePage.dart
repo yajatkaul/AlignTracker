@@ -198,7 +198,7 @@ class _SitePageState extends State<SitePage> {
         autoStart: false,
         onStart: onStart,
         isForegroundMode: true,
-        //autoStartOnBoot: true,
+        autoStartOnBoot: false,
       ),
     );
 

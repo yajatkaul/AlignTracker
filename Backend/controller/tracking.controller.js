@@ -35,7 +35,7 @@ export const getSites = async (req, res) => {
 
     const sites = await Site.find({
       employeeId: req.session.userId,
-      finished: completed,
+      completed: completed,
     })
       .skip((page - 1) * limit)
       .limit(Number(limit))
@@ -187,7 +187,6 @@ export const getAllTracking = async (req, res) => {
       name,
       siteName,
     } = req.query;
-    console.log(req.query);
     // Build the filter object for MongoDB
     let filterConditions = { finished: true };
 

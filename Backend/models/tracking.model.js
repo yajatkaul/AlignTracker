@@ -35,10 +35,13 @@ const trackSchema = new Schema(
       default: false,
     },
     finished: {
-      type: Boolean, 
+      type: Boolean,
       default: false,
     },
     selfi: {
+      type: String,
+    },
+    remarks: {
       type: String,
     },
     siteImages: [
