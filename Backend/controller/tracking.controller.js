@@ -5,7 +5,15 @@ import User from "../models/user.model.js";
 
 export const createSite = async (req, res) => {
   try {
-    const { latitude, longitude, siteName, employeeId, timing } = req.body;
+    const {
+      latitude,
+      longitude,
+      siteName,
+      employeeId,
+      timing,
+      documents,
+      contactNo,
+    } = req.body;
 
     const user = await User.findById(employeeId);
 
@@ -16,6 +24,8 @@ export const createSite = async (req, res) => {
       latitude,
       longitude,
       timing,
+      documents,
+      contactNo,
     });
 
     await newSite.save();
@@ -54,7 +64,7 @@ export const getTracking = async (req, res) => {
   try {
     const { siteID } = req.query;
 
-    const trackingData = await Tracking.findOne({ siteID });
+    const trackingData = await Tracking.find({ siteID });
 
     res.status(200).json(trackingData);
   } catch (err) {
@@ -135,14 +145,14 @@ export const completeSite = async (req, res) => {
 
     const images = req.files["image"] || [];
     const selfi = req.files["selfi"] ? req.files["selfi"][0] : null;
+    const remarks = req.body.remarks;
 
     const trackSite = await Tracking.findOne({ siteID });
-    const site = await Site.findById(siteID);
     const user = await User.findById(req.session.userId);
 
     user.points += 100;
     trackSite.finished = true;
-    site.finished = true;
+    trackSite.remarks = remarks;
 
     trackSite.selfi = selfi.path;
     images.forEach((image) => {
@@ -150,25 +160,8 @@ export const completeSite = async (req, res) => {
     });
     await trackSite.save();
     await user.save();
-    await site.save();
 
     return res.status(200).json({ result: "Successful" });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-export const checkSiteStatus = async (req, res) => {
-  try {
-    const { siteID } = req.query;
-    const trackSite = await Tracking.findOne({ siteID });
-    if (!trackSite) {
-      return res.status(200).json({ started: false, finished: false });
-    }
-    res
-      .status(200)
-      .json({ started: trackSite.started, finished: trackSite.finished });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });

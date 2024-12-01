@@ -1,7 +1,7 @@
 import 'dart:convert';
-
 import 'package:aligntracker/auth/login.dart';
 import 'package:aligntracker/env.dart';
+import 'package:aligntracker/pages/planPage/PlanPage.dart';
 import 'package:aligntracker/pages/sitePage/FinishedSites.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
@@ -116,7 +116,7 @@ class _ProfileState extends State<Profile> {
           ),
         ),
         const SizedBox(
-          height: 20,
+          height: 10,
         ),
         Row(
           children: [
@@ -160,6 +160,26 @@ class _ProfileState extends State<Profile> {
             )
           ],
         ),
+        const SizedBox(
+          height: 10,
+        ),
+        SizedBox(
+          height: 60,
+          child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Planpage()));
+              },
+              style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)))),
+              child: const Text(
+                "Todays Plan",
+                textAlign: TextAlign.center,
+                softWrap: true,
+                style: TextStyle(fontSize: 18),
+              )),
+        )
       ]),
     ));
   }

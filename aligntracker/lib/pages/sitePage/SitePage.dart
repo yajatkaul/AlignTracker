@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/CompleteSite.dart';
+import 'package:aligntracker/pages/sitePage/SnagsList.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -183,7 +185,7 @@ class SitePage extends StatefulWidget {
 
 class _SitePageState extends State<SitePage> {
   bool? started;
-  bool? finished;
+  String? contactNo;
 
   Future<void> initializeService() async {
     final service = FlutterBackgroundService();
@@ -216,21 +218,15 @@ class _SitePageState extends State<SitePage> {
   }
 
   void _getSiteStatus() async {
-    final response = await http.get(
-      Uri.parse(
-          '$serverURL/api/tracking/checkSiteStatus?siteID=${widget.site['_id']}'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      if (mounted) {
-        setState(() {
-          started = jsonDecode(response.body)['started'];
-          finished = jsonDecode(response.body)['finished'];
-        });
-      }
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('siteID') == widget.site['_id']) {
+      setState(() {
+        started = true;
+      });
+    } else {
+      setState(() {
+        started = false;
+      });
     }
   }
 
@@ -296,7 +292,6 @@ class _SitePageState extends State<SitePage> {
 
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getString('siteID') != null) {
-      print(prefs.getString('siteID'));
       showToast(context, "You have already started a site", false);
       return;
     }
@@ -304,7 +299,6 @@ class _SitePageState extends State<SitePage> {
     await initializeService();
     setState(() {
       started = true;
-      finished = false;
     });
   }
 
@@ -323,6 +317,19 @@ class _SitePageState extends State<SitePage> {
         "https://www.google.com/maps/search/?api=1&query=${widget.site['latitude']},${widget.site['longitude']}";
 
     await launchUrlString(googleMaps);
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch $phoneNumber';
+    }
   }
 
   @override
@@ -385,26 +392,110 @@ class _SitePageState extends State<SitePage> {
                     ],
                   ),
                 ),
-                Text(
-                  "Time: ${widget.site['timing']}",
-                  style: const TextStyle(fontSize: 20),
-                )
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Snagslist(
+                                  siteId: widget.site['_id'],
+                                )));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 30,
+                          ),
+                          SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          Text(
+                            "Snags List",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: () {},
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.document_scanner_rounded,
+                            size: 30,
+                          ),
+                          SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          Text(
+                            "Related Documents",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                if (widget.site['contactNo'] != null)
+                  Row(
+                    children: [
+                      const Text("Contact No: ",
+                          style: TextStyle(fontSize: 21)),
+                      GestureDetector(
+                        onTap: () async {
+                          _makePhoneCall(widget.site['contactNo']);
+                        },
+                        child: Text(
+                          widget.site['contactNo'],
+                          style:
+                              const TextStyle(fontSize: 21, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
-            if (started == null && finished == null)
+            if (started == null)
               const Center(
                 child: SizedBox(
                     height: 50, width: 50, child: CircularProgressIndicator()),
-              ),
-            if (started != null && started == false)
+              )
+            else if (started != null && started == false)
               SlideAction(
                 text: "Start",
-                onSubmit: _startTracking,
-              ),
-            if (finished != null &&
-                started != null &&
-                finished == false &&
-                started == true)
+                onSubmit: () async {
+                  _startTracking();
+                },
+              )
+            else if (started != null && started == true)
               ElevatedButton(
                   onPressed: () async {
                     final result = await Navigator.push(
@@ -419,7 +510,7 @@ class _SitePageState extends State<SitePage> {
                     if (result == 1) {
                       stopService();
                       setState(() {
-                        finished = true;
+                        started = false;
                       });
                     }
                   },

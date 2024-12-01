@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  checkSiteStatus,
   completeSite,
   createSite,
   getAllTracking,
@@ -19,7 +18,6 @@ router.post("/createSite", createSite);
 router.post("/trackSite", trackSite);
 
 router.get("/getSites", getSites);
-router.get("/checkSiteStatus", checkSiteStatus);
 
 router.post("/locationStatusChecker", locationStatusChecker);
 router.post("/completeSite", (req, res, next) => {

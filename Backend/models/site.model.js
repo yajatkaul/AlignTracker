@@ -26,29 +26,23 @@ const siteSchema = new Schema(
       type: String,
       required: true,
     },
-    started: {
-      type: Boolean,
-      default: false,
-    },
     drawing: [
       {
         type: String,
         required: true,
+        default: [],
       },
     ],
     documents: [
       {
         type: String,
         required: true,
+        default: [],
       },
     ],
     contactNo: {
       type: String,
       required: true,
-    },
-    finished: {
-      type: Boolean,
-      default: false,
     },
     completed: {
       type: Boolean,

@@ -3,10 +3,11 @@ import mongoose, { Schema } from "mongoose";
 const snagsSchema = new Schema(
   {
     employeeId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
-    employeeName: {
+    siteId: {
       type: String,
       required: true,
     },
@@ -21,7 +22,7 @@ const snagsSchema = new Schema(
     images: [
       {
         type: String,
-        default: false,
+        default: [],
       },
     ],
     status: {

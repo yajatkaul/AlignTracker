@@ -1,6 +1,7 @@
 import { configDotenv } from "dotenv";
 import authRoute from "./routes/auth.routes.js";
 import userRoute from "./routes/user.routes.js";
+import dataRoute from "./routes/data.routes.js";
 import trackingRoute from "./routes/tracking.routes.js";
 import connectToMongoDB from "./db/connectToMongodb.js";
 import MongoStore from "connect-mongo";
@@ -36,6 +37,7 @@ app.use(
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/tracking", trackingRoute);
+app.use("/api/data", dataRoute);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -1,4 +1,5 @@
 import 'package:aligntracker/env.dart';
+import 'package:aligntracker/pages/planPage/SnagAdd.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
@@ -21,6 +22,7 @@ class Completesite extends StatefulWidget {
 class _CompletesiteState extends State<Completesite> {
   File? yourImage;
   List<File> siteImages = [];
+  String? remarks;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -81,6 +83,11 @@ class _CompletesiteState extends State<Completesite> {
       request.files.add(pic);
     }
 
+    remarks = _controller.text;
+    if (remarks != null) {
+      request.fields['remarks'] = remarks!;
+    }
+
     try {
       var response = await request.send();
       print(response.statusCode);
@@ -96,8 +103,11 @@ class _CompletesiteState extends State<Completesite> {
     }
   }
 
+  final TextEditingController _controller = TextEditingController();
+
   @override
   void dispose() {
+    _controller.dispose();
     super.dispose();
   }
 
@@ -121,8 +131,7 @@ class _CompletesiteState extends State<Completesite> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             const Text(
               "Your Image",
@@ -130,8 +139,14 @@ class _CompletesiteState extends State<Completesite> {
             ),
             const SizedBox(height: 10),
             if (yourImage != null)
-              Image.file(yourImage!,
-                  height: 100, width: 100, fit: BoxFit.cover),
+              Wrap(children: [
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.file(yourImage!,
+                      height: 100, width: 100, fit: BoxFit.cover),
+                ),
+              ]),
             ElevatedButton(
               onPressed: pickYourImage,
               child: const Text("Capture Your Image"),
@@ -154,6 +169,63 @@ class _CompletesiteState extends State<Completesite> {
             ElevatedButton(
               onPressed: pickSiteImages,
               child: const Text("Pick Site Images"),
+            ),
+            const Text(
+              "Remarks",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.multiline,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Enter your text here...',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 15.0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)))),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SnagAdd(
+                              siteID: widget.siteID,
+                            )));
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 30,
+                      ),
+                      SizedBox(
+                        width: 10,
+                        height: 70,
+                      ),
+                      Text(
+                        "Snags Update",
+                        softWrap: true,
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 30,
             ),
             const Spacer(),
             SlideAction(

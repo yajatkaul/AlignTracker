@@ -43,6 +43,7 @@ const trackSchema = new Schema(
     },
     remarks: {
       type: String,
+      default: "No Remakrs",
     },
     siteImages: [
       {

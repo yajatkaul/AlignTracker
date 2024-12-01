@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 export const signup = async (req, res) => {
   try {
     const { displayName, password, confirmPassword } = req.body;
-    console.log(req.body);
+
     //Salting and hashing the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

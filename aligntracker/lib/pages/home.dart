@@ -155,7 +155,7 @@ class _HomePageState extends State<HomePage> {
             ]),
         appBar: AppBar(
           toolbarHeight: 60,
-          title: const Text("Home page"),
+          title: const Text("Start Your Day"),
           actions: <Widget>[
             IconButton(
               onPressed: () {
