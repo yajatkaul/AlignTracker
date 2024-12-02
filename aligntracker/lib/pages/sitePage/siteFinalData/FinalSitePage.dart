@@ -11,6 +11,10 @@ class FinalSitePage extends StatefulWidget {
 class _FinalSitePageState extends State<FinalSitePage> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Select Data"),
+      ),
+    );
   }
 }

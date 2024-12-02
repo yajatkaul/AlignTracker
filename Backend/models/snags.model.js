@@ -8,7 +8,8 @@ const snagsSchema = new Schema(
       required: true,
     },
     siteId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Site",
       required: true,
     },
     topic: {

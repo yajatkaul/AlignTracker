@@ -4,7 +4,7 @@ import {
   createSite,
   getAllTracking,
   getSites,
-  getTracking,
+  getTrackings,
   locationStatusChecker,
   trackSite,
 } from "../controller/tracking.controller.js";
@@ -42,7 +42,7 @@ router.post("/completeSite", (req, res, next) => {
   });
 });
 
-router.get("/getTracking", getTracking);
+router.get("/getTracking", getTrackings);
 
 router.get("/admin/trackingData", checkAdmin, getAllTracking);
 

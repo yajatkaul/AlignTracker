@@ -39,9 +39,12 @@ export const createSite = async (req, res) => {
 
 export const getSites = async (req, res) => {
   try {
-    const { completed, page = 1, limit = 1000 } = req.query;
+    const { completed, page = 1, limit = 20 } = req.query;
 
-    const totalSites = await Site.countDocuments();
+    const totalSites = await Site.countDocuments({
+      employeeId: req.session.userId,
+      completed: completed,
+    });
 
     const sites = await Site.find({
       employeeId: req.session.userId,
@@ -60,13 +63,27 @@ export const getSites = async (req, res) => {
   }
 };
 
-export const getTracking = async (req, res) => {
+export const getTrackings = async (req, res) => {
   try {
-    const { siteID } = req.query;
+    const { siteID, page = 1, limit = 20 } = req.query;
 
-    const trackingData = await Tracking.find({ siteID });
+    const totalSites = await Tracking.countDocuments({
+      siteID,
+      userID: req.session.userId,
+    });
 
-    res.status(200).json(trackingData);
+    const trackingData = await Tracking.find({
+      siteID,
+      userID: req.session.userId,
+    })
+      .populate("userID")
+      .populate("siteID")
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    const hasMore = page * limit < totalSites;
+
+    res.status(200).json({ trackingData, hasMore });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -77,42 +94,24 @@ export const trackSite = async (req, res) => {
   try {
     const { siteID, latitude, longitude } = req.body;
 
-    const trackSite = await Tracking.findOne({ siteID });
     const site = await Site.findById(siteID);
 
     const formattedTime = moment().format("h:mm A");
     const formattedStartTime = moment().format("MM/DD/YY h:mm A");
 
-    if (!trackSite) {
-      const newTrackSite = new Tracking({
-        siteID,
-        userID: req.session.userId,
-        locations: [],
-        startTime: formattedStartTime,
-        finished: false,
-        started: true,
-        siteImages: [],
-        pauses: [],
-      });
+    const newTrackSite = new Tracking({
+      siteID,
+      userID: req.session.userId,
+      locations: [],
+      startTime: formattedStartTime,
+      finished: false,
+      started: true,
+      siteImages: [],
+      pauses: [],
+    });
 
-      site.started = true;
-      newTrackSite.locations.push([latitude, longitude, formattedTime]);
-      await newTrackSite.save();
-      await site.save();
-
-      return res.status(200).json({ result: "Successful" });
-    }
-
-    if (trackSite.finished) {
-      return res.status(400).json({ result: "Already finished" });
-    }
-
-    if (!trackSite.started) {
-      trackSite.started = true;
-    }
-
-    trackSite.locations.push([latitude, longitude, formattedTime]);
-    await trackSite.save();
+    newTrackSite.locations.push([latitude, longitude, formattedTime]);
+    await newTrackSite.save();
 
     return res.status(200).json({ result: "Successful" });
   } catch (err) {
@@ -147,7 +146,11 @@ export const completeSite = async (req, res) => {
     const selfi = req.files["selfi"] ? req.files["selfi"][0] : null;
     const remarks = req.body.remarks;
 
-    const trackSite = await Tracking.findOne({ siteID });
+    const trackSite = await Tracking.findOne({
+      siteID,
+      finished: false,
+      userID: req.session.userId,
+    });
     const user = await User.findById(req.session.userId);
 
     user.points += 100;

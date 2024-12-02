@@ -3,12 +3,13 @@ import mongoose, { Schema } from "mongoose";
 const trackSchema = new Schema(
   {
     siteID: {
-      type: String,
-      unique: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Site",
       required: true,
     },
     userID: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     locations: [

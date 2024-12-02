@@ -2,29 +2,28 @@ import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/sitePage/siteFinalData/FinalSitePage.dart';
-import 'package:aligntracker/pages/sitePage/siteSelection/SiteSelection.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:http/http.dart' as http;
-
-class Finishedsites extends StatefulWidget {
-  const Finishedsites({super.key});
+class SiteSelection extends StatefulWidget {
+  final String siteId;
+  const SiteSelection({super.key, required this.siteId});
 
   @override
-  State<Finishedsites> createState() => _FinishedsitesState();
+  State<SiteSelection> createState() => _SiteSelectionState();
 }
 
-class _FinishedsitesState extends State<Finishedsites> {
+class _SiteSelectionState extends State<SiteSelection> {
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
 
-  List<dynamic> sites = [];
+  List<dynamic> trackings = [];
   final ScrollController _scrollController = ScrollController();
 
-  Future<void> _getSites() async {
+  Future<void> getTracking() async {
     if (isLoading || !hasMore) return;
 
     if (mounted) {
@@ -38,7 +37,7 @@ class _FinishedsitesState extends State<Finishedsites> {
 
     final response = await http.get(
       Uri.parse(
-          '$serverURL/api/tracking/getSites?completed=true&page=$currentPage&limit=14'),
+          '$serverURL/api/tracking/getTracking?siteID=${widget.siteId}&page=$currentPage&limit=14'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Cookie': sessionCookie!,
@@ -47,10 +46,9 @@ class _FinishedsitesState extends State<Finishedsites> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-
       if (mounted) {
         setState(() {
-          sites.addAll(data['sites']);
+          trackings.addAll(data['trackingData']);
           hasMore = data['hasMore'];
           currentPage++;
           isLoading = false;
@@ -68,16 +66,21 @@ class _FinishedsitesState extends State<Finishedsites> {
   @override
   void initState() {
     super.initState();
-    _getSites();
+    getTracking();
 
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge) {
         if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent) {
-          _getSites();
+          getTracking();
         }
       }
     });
+  }
+
+  List<String> splitter(String startTime) {
+    List<String> parts = startTime.split(' ');
+    return parts;
   }
 
   Future<void> _handleRefresh() async {
@@ -85,30 +88,22 @@ class _FinishedsitesState extends State<Finishedsites> {
       setState(() {
         currentPage = 1;
         hasMore = true;
-        sites = [];
+        trackings = [];
       });
     }
-    await _getSites();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    await getTracking();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Finished Sites"),
+        title: const Text("Select Tracking"),
       ),
       body: LiquidPullToRefresh(
         onRefresh: _handleRefresh,
         child: ListView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: sites.map((site) {
+          children: trackings.map((tracking) {
             return Padding(
               padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
               child: ElevatedButton(
@@ -119,19 +114,27 @@ class _FinishedsitesState extends State<Finishedsites> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              SiteSelection(siteId: site['_id'])));
+                          builder: (context) => FinalSitePage(
+                                siteId: tracking['siteID']['_id'],
+                              )));
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          const Icon(
-                            Icons.local_shipping,
-                            size: 24,
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                        '$serverURL/api${tracking['userID']['profilePic']}'))),
                           ),
                           const SizedBox(
                             width: 10,
@@ -140,21 +143,20 @@ class _FinishedsitesState extends State<Finishedsites> {
                           SizedBox(
                             width: 160,
                             child: Text(
-                              site['siteName'] ?? 'No Title',
+                              tracking['userID']['displayName'],
                               softWrap: true,
                               style: const TextStyle(fontSize: 24),
                             ),
                           ),
-                          const Icon(Icons.check)
+                          Text(splitter(tracking['startTime'])[0])
                         ],
                       ),
-                      Text(site['timing'],
-                          style: const TextStyle(fontSize: 15)),
                     ],
                   ),
                 ),
               ),
             );
+            ;
           }).toList(),
         ),
       ),
