@@ -26,6 +26,15 @@ const snagsSchema = new Schema(
         default: [],
       },
     ],
+    snagCloseimages: [
+      {
+        type: String,
+        default: [],
+      },
+    ],
+    closeComment: {
+      type: String,
+    },
     status: {
       type: String,
       default: "Open",

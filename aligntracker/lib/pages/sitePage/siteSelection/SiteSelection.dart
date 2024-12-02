@@ -115,7 +115,9 @@ class _SiteSelectionState extends State<SiteSelection> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => FinalSitePage(
+                                trackingId: tracking['_id'],
                                 siteId: tracking['siteID']['_id'],
+                                documents: tracking['siteID']['documents'],
                               )));
                 },
                 child: Padding(
@@ -156,7 +158,6 @@ class _SiteSelectionState extends State<SiteSelection> {
                 ),
               ),
             );
-            ;
           }).toList(),
         ),
       ),

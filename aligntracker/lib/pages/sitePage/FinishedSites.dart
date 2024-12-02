@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
-import 'package:aligntracker/pages/sitePage/siteFinalData/FinalSitePage.dart';
 import 'package:aligntracker/pages/sitePage/siteSelection/SiteSelection.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
@@ -119,8 +118,9 @@ class _FinishedsitesState extends State<Finishedsites> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              SiteSelection(siteId: site['_id'])));
+                          builder: (context) => SiteSelection(
+                                siteId: site['_id'],
+                              )));
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -148,8 +148,6 @@ class _FinishedsitesState extends State<Finishedsites> {
                           const Icon(Icons.check)
                         ],
                       ),
-                      Text(site['timing'],
-                          style: const TextStyle(fontSize: 15)),
                     ],
                   ),
                 ),

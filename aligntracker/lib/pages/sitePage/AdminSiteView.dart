@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
-import 'package:aligntracker/pages/sitePage/siteFinalData/FinalSitePage.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -315,13 +314,7 @@ class _AdminsiteviewState extends State<Adminsiteview> {
                 style: ButtonStyle(
                     shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)))),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              FinalSitePage(siteId: site['_id'])));
-                },
+                onPressed: () {},
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Row(

@@ -4,6 +4,7 @@ import {
   createSite,
   getAllTracking,
   getSites,
+  getSpecificTrackings,
   getTrackings,
   locationStatusChecker,
   trackSite,
@@ -14,7 +15,7 @@ import checkAdmin from "../middleware/checkAdmin.js";
 
 const router = express.Router();
 
-router.post("/createSite", createSite);
+router.post("/createSite", upload.array("documents", 10), createSite);
 router.post("/trackSite", trackSite);
 
 router.get("/getSites", getSites);
@@ -43,6 +44,7 @@ router.post("/completeSite", (req, res, next) => {
 });
 
 router.get("/getTracking", getTrackings);
+router.get("/getspecificTracking", getSpecificTrackings);
 
 router.get("/admin/trackingData", checkAdmin, getAllTracking);
 

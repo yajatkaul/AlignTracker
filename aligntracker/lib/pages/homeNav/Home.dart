@@ -118,8 +118,6 @@ class _HomeState extends State<Home> {
                                         const Icon(Icons.run_circle_rounded)
                                     ],
                                   ),
-                                  Text(site['timing'],
-                                      style: const TextStyle(fontSize: 15)),
                                 ],
                               ),
                             ),

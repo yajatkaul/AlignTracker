@@ -10,18 +10,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 
-class SnagAdd extends StatefulWidget {
+class Snagclosepage extends StatefulWidget {
   final String siteID;
-  const SnagAdd({super.key, required this.siteID});
+  const Snagclosepage({super.key, required this.siteID});
 
   @override
-  State<SnagAdd> createState() => _SnagAddState();
+  State<Snagclosepage> createState() => _SnagclosepageState();
 }
 
-class _SnagAddState extends State<SnagAdd> {
+class _SnagclosepageState extends State<Snagclosepage> {
+  final TextEditingController _closeCommentController = TextEditingController();
+
   List<File> siteImages = [];
-  final TextEditingController _topicController = TextEditingController();
-  final TextEditingController _issueController = TextEditingController();
 
   final ImagePicker _picker = ImagePicker();
 
@@ -38,7 +38,7 @@ class _SnagAddState extends State<SnagAdd> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final sessionCookie = prefs.getString('session_cookie');
     final Uri url =
-        Uri.parse('$serverURL/api/data/createSnag?siteId=${widget.siteID}');
+        Uri.parse('$serverURL/api/data/closeSnag?siteId=${widget.siteID}');
 
     var request = http.MultipartRequest('POST', url);
 
@@ -58,8 +58,7 @@ class _SnagAddState extends State<SnagAdd> {
       request.files.add(pic);
     }
 
-    request.fields['topic'] = _topicController.text;
-    request.fields['issue'] = _issueController.text;
+    request.fields['closeComment'] = _closeCommentController.text;
 
     try {
       var response = await request.send();
@@ -76,61 +75,42 @@ class _SnagAddState extends State<SnagAdd> {
 
   @override
   void dispose() {
-    _issueController.dispose();
-    _topicController.dispose();
+    _closeCommentController.dispose();
     super.dispose();
-  }
-
-  Future<void> uploadSnag(BuildContext context) async {
-    if (_issueController.text == "" ||
-        _topicController.text == "" ||
-        siteImages.isEmpty) {
-      showToast(context, "Fill all the fileds", false);
-      return;
-    }
-
-    await uploadImages();
-    if (mounted) {
-      Navigator.pop(context, 1);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Future<void> uploadProcess() async {
+      if (siteImages == []) {
+        showToast(context, "Submit all the images", false);
+        return;
+      }
+
+      await uploadImages();
+      if (mounted) {
+        Navigator.pop(context, 1);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add a snag"),
+        title: const Text("Close Snag"),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Topic",
+              "Close Comment",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(
               height: 5,
             ),
             TextField(
-                controller: _topicController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Snag Topic",
-                )),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              "Issue",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(
-              height: 5,
-            ),
-            TextField(
-              controller: _issueController,
+              controller: _closeCommentController,
               keyboardType: TextInputType.multiline,
               maxLines: 3,
               decoration: const InputDecoration(
@@ -168,16 +148,14 @@ class _SnagAddState extends State<SnagAdd> {
               style: ButtonStyle(
                   shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20)))),
-              onPressed: () {
-                uploadSnag(context);
-              },
+              onPressed: uploadProcess,
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
                     children: [
                       Icon(
-                        Icons.wrap_text,
+                        Icons.edit_note,
                         size: 30,
                       ),
                       SizedBox(
@@ -185,7 +163,7 @@ class _SnagAddState extends State<SnagAdd> {
                         height: 70,
                       ),
                       Text(
-                        "Upload Snag",
+                        "Snags Close",
                         softWrap: true,
                         style: TextStyle(fontSize: 20),
                       ),

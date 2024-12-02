@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aligntracker/env.dart';
+import 'package:aligntracker/pages/planPage/RelatedDocuments.dart';
+import 'package:aligntracker/pages/sitePage/siteFinalData/SiteSurveyPage.dart';
 import 'package:aligntracker/pages/sitePage/CompleteSite.dart';
 import 'package:aligntracker/pages/sitePage/SnagsList.dart';
 import 'package:aligntracker/utils/toast.dart';
@@ -67,7 +69,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 // Make _trackLocation a top-level function as well
 Future<void> _trackLocation(String siteID) async {
-  print("Called");
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final sessionCookie = prefs.getString('session_cookie');
 
@@ -290,12 +291,6 @@ class _SitePageState extends State<SitePage> {
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString('siteID') != null) {
-      showToast(context, "You have already started a site", false);
-      return;
-    }
-
     await initializeService();
     setState(() {
       started = true;
@@ -437,7 +432,14 @@ class _SitePageState extends State<SitePage> {
                   style: ButtonStyle(
                       shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20)))),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Relateddocuments(
+                                  siteDocuments: widget.site['documents'],
+                                )));
+                  },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -464,23 +466,77 @@ class _SitePageState extends State<SitePage> {
                 const SizedBox(
                   height: 10,
                 ),
-                if (widget.site['contactNo'] != null)
-                  Row(
+                ElevatedButton(
+                  style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SiteSurveyPage(
+                                  siteId: widget.site['_id'],
+                                )));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Contact No: ",
-                          style: TextStyle(fontSize: 21)),
-                      GestureDetector(
-                        onTap: () async {
-                          _makePhoneCall(widget.site['contactNo']);
-                        },
-                        child: Text(
-                          widget.site['contactNo'],
-                          style:
-                              const TextStyle(fontSize: 21, color: Colors.blue),
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.supervised_user_circle,
+                            size: 30,
+                          ),
+                          SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          Text(
+                            "Site Survey",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: () async {
+                    _makePhoneCall(widget.site['contactNo']);
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.call,
+                            size: 30,
+                          ),
+                          SizedBox(
+                            width: 10,
+                            height: 70,
+                          ),
+                          Text(
+                            "Site Contact",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
               ],
             ),
             if (started == null)

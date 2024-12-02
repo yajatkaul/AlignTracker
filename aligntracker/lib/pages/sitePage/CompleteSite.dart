@@ -1,5 +1,6 @@
 import 'package:aligntracker/env.dart';
 import 'package:aligntracker/pages/planPage/SnagAdd.dart';
+import 'package:aligntracker/pages/planPage/SurveyAdd.dart';
 import 'package:aligntracker/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
@@ -216,6 +217,42 @@ class _CompletesiteState extends State<Completesite> {
                       ),
                       Text(
                         "Snags Update",
+                        softWrap: true,
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: ButtonStyle(
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)))),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SurveyAdd(
+                              siteId: widget.siteID,
+                            )));
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.supervised_user_circle,
+                        size: 30,
+                      ),
+                      SizedBox(
+                        width: 10,
+                        height: 70,
+                      ),
+                      Text(
+                        "Survey Update",
                         softWrap: true,
                         style: TextStyle(fontSize: 20),
                       ),

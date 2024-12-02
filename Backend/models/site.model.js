@@ -22,20 +22,9 @@ const siteSchema = new Schema(
       type: String,
       required: true,
     },
-    timing: {
-      type: String,
-      required: true,
-    },
-    drawing: [
-      {
-        type: String,
-        required: true,
-        default: [],
-      },
-    ],
     documents: [
       {
-        type: String,
+        type: Array,
         required: true,
         default: [],
       },

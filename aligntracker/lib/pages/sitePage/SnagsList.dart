@@ -67,9 +67,11 @@ class _SnagslistState extends State<Snagslist> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => SnagDetails(
+                                siteId: widget.siteId,
                                 topic: snag['topic'],
                                 issue: snag['issue'],
                                 images: snag['images'],
+                                status: snag['status'],
                               )));
                 },
                 child: Row(children: [

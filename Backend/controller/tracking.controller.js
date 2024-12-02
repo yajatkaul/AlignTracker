@@ -5,17 +5,24 @@ import User from "../models/user.model.js";
 
 export const createSite = async (req, res) => {
   try {
+    const files = req.files;
     const {
       latitude,
       longitude,
       siteName,
       employeeId,
       timing,
-      documents,
       contactNo,
+      fileNames,
     } = req.body;
 
     const user = await User.findById(employeeId);
+
+    const fileNamesArray = Array.isArray(fileNames)
+      ? fileNames
+      : typeof fileNames === "string"
+      ? JSON.parse(fileNames)
+      : [];
 
     const newSite = new Site({
       siteName,
@@ -24,8 +31,12 @@ export const createSite = async (req, res) => {
       latitude,
       longitude,
       timing,
-      documents,
       contactNo,
+    });
+
+    files.forEach((file, index) => {
+      const fileName = fileNamesArray[index] || `file-${index + 1}`;
+      newSite.documents.push([fileName, file.path]);
     });
 
     await newSite.save();
@@ -90,11 +101,24 @@ export const getTrackings = async (req, res) => {
   }
 };
 
+export const getSpecificTrackings = async (req, res) => {
+  try {
+    const { siteID } = req.query;
+
+    const trackingData = await Tracking.findById(siteID)
+      .populate("userID")
+      .populate("siteID");
+
+    res.status(200).json(trackingData);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const trackSite = async (req, res) => {
   try {
     const { siteID, latitude, longitude } = req.body;
-
-    const site = await Site.findById(siteID);
 
     const formattedTime = moment().format("h:mm A");
     const formattedStartTime = moment().format("MM/DD/YY h:mm A");

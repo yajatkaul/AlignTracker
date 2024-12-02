@@ -1,15 +1,18 @@
 import 'package:aligntracker/env.dart';
+import 'package:aligntracker/pages/planPage/SnagClosePage.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class SnagDetails extends StatefulWidget {
-  final String topic, issue;
+  final String topic, issue, siteId, status;
   final List<dynamic> images;
   const SnagDetails(
       {super.key,
       required this.topic,
       required this.issue,
-      required this.images});
+      required this.images,
+      required this.siteId,
+      required this.status});
 
   @override
   State<SnagDetails> createState() => _SnagDetailsState();
@@ -23,7 +26,7 @@ class _SnagDetailsState extends State<SnagDetails> {
         title: const Text("Details"),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -43,7 +46,8 @@ class _SnagDetailsState extends State<SnagDetails> {
               "Images",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            Expanded(
+            SizedBox(
+              height: 350,
               child: GridView(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
@@ -70,6 +74,43 @@ class _SnagDetailsState extends State<SnagDetails> {
                 }).toList(),
               ),
             ),
+            const Spacer(),
+            if (widget.status == "Open")
+              ElevatedButton(
+                style: ButtonStyle(
+                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)))),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Snagclosepage(
+                                siteID: widget.siteId,
+                              )));
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.edit_note,
+                          size: 30,
+                        ),
+                        SizedBox(
+                          width: 10,
+                          height: 70,
+                        ),
+                        Text(
+                          "Snags Close",
+                          softWrap: true,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
